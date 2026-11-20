@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Chantiers" />
+<meta name="theme-color" content="#1F3864" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<title>Gestion Chantiers</title>
+<style>
+  :root {
+    --navy: #1F3864;
+    --navy-light: #2a4a85;
+    --bg: #F2F2F2;
+    --danger: #C00000;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; height: 100%; background: var(--bg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #222; }
+  #app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
+
+  header {
+    background: var(--navy);
+    color: white;
+    padding: calc(14px + env(safe-area-inset-top)) 16px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  header .back { font-size: 22px; cursor: pointer; width: 28px; }
+  header h1 { font-size: 18px; margin: 0; font-weight: 700; flex: 1; }
+
+  main { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    padding: 16px; padding-bottom: calc(100px + env(safe-area-inset-bottom)); }
+
+  .card {
+    background: white;
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .card-title { font-size: 17px; font-weight: 700; color: var(--navy); margin: 0 0 4px; }
+  .card-sub { font-size: 13px; color: #555; margin: 0 0 6px; }
+  .card-meta { font-size: 12px; color: #999; margin: 0; }
+  .empty { text-align: center; color: #888; margin-top: 40px; }
+
+  .fab {
+    position: fixed;
+    right: 20px;
+    bottom: calc(24px + env(safe-area-inset-bottom));
+    width: 56px; height: 56px;
+    border-radius: 28px;
+    background: var(--navy);
+    color: white;
+    font-size: 30px;
+    border: none;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 10;
+  }
+
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 12px; color: #555; margin-bottom: 4px; }
+  .field input, .field select {
+    width: 100%;
+    border: 1px solid #DDD;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 16px;
+    background: white;
+  }
+  .field input:focus { outline: 2px solid var(--navy-light); border-color: var(--navy-light); }
+
+  .section-title { font-size: 14px; font-weight: 700; color: var(--navy); margin: 20px 0 8px; }
+  .section-title:first-child { margin-top: 0; }
+
+  .toggle-row { display: flex; gap: 8px; }
+  .toggle-btn {
+    border: 1px solid #DDD;
+    border-radius: 8px;
+    padding: 8px 16px;
+    background: white;
+    font-size: 15px;
+  }
+  .toggle-btn.active { background: var(--navy); border-color: var(--navy); color: white; font-weight: 600; }
+
+  .ouverture-card { background: #F7F7F7; border-radius: 8px; padding: 10px; margin-bottom: 10px; }
+  .ouverture-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .ouverture-type { font-weight: 700; color: var(--navy); text-transform: capitalize; }
+  .ouverture-remove { color: var(--danger); font-weight: 700; background: none; border: none; font-size: 16px; }
+  .row-2 { display: flex; gap: 10px; }
+  .row-2 > div { flex: 1; }
+
+  .add-row { display: flex; gap: 10px; margin-bottom: 10px; }
+  .add-btn {
+    border: 1px solid var(--navy);
+    border-radius: 8px;
+    padding: 8px 14px;
+    background: white;
+    color: var(--navy);
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .btn-primary {
+    background: var(--navy);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 14px;
+    width: 100%;
+    font-weight: 700;
+    font-size: 16px;
+    margin-top: 16px;
+  }
+  .btn-secondary {
+    background: #EEE;
+    color: #333;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-weight: 600;
+  }
+
+  .result-header { background: var(--navy); color: white; padding: 16px; margin: -16px -16px 16px; }
+  .result-header .title { font-size: 18px; font-weight: 700; }
+  .result-header .sub { font-size: 13px; color: #D7DEEB; margin-top: 4px; }
+  .alert-box { background: #FDECEC; padding: 12px; border-radius: 8px; margin-bottom: 14px; color: var(--danger); font-weight: 600; }
+  .result-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #EEE; }
+  .result-row .mat { flex: 1; }
+  .result-row .qte { font-weight: 700; color: var(--navy); }
+
+  .modal-bg {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+    display: flex; align-items: center; justify-content: center; padding: 24px;
+    z-index: 100;
+  }
+  .modal-card { background: white; border-radius: 12px; padding: 20px; width: 100%; max-width: 360px; }
+  .modal-title { font-size: 18px; font-weight: 700; color: var(--navy); margin: 0 0 14px; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <span class="back hidden" id="backBtn">‹</span>
+    <h1 id="headerTitle">Mes chantiers</h1>
+  </header>
+  <main id="main"></main>
+</div>
+
+<div class="modal-bg hidden" id="modalBg">
+  <div class="modal-card">
+    <h2 class="modal-title" id="modalTitle">Nouveau chantier</h2>
+    <div id="modalBody"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="modalCancel">Annuler</button>
+      <button class="btn-primary" style="width:auto;margin-top:0;" id="modalConfirm">Créer</button>
+    </div>
+  </div>
+</div>
+
+<script src="metreCalc.js"></script>
+<script src="store.js"></script>
+<script src="app.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>
