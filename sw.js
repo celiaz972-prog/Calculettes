@@ -1,7 +1,7 @@
 // Service worker minimal — met en cache l'app pour fonctionnement 100% offline
 // une fois visitée une première fois.
 
-const CACHE = "chantiers-v1";
+const CACHE = "chantiers-v2";
 const ASSETS = [
   "./",
   "./index.html",

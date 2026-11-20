@@ -81,6 +81,16 @@ function renderHome() {
   mainEl.innerHTML = "";
   const chantiers = getChantiers();
 
+  mainEl.appendChild(el("div", { class: "backup-row" }, [
+    el("button", { class: "backup-btn", onclick: exporterSauvegarde }, "⬇ Exporter"),
+    el("button", { class: "backup-btn", onclick: () => document.getElementById("importFile").click() }, "⬆ Importer"),
+  ]));
+  mainEl.appendChild(el("input", {
+    type: "file", id: "importFile", accept: "application/json",
+    style: "display:none",
+    onchange: (e) => importerFichier(e.target.files[0]),
+  }));
+
   if (chantiers.length === 0) {
     mainEl.appendChild(el("p", { class: "empty" }, "Aucun chantier. Appuie sur + pour commencer."));
   } else {
@@ -108,6 +118,38 @@ function confirmSupprimerChantier(c) {
     deleteChantier(c.id);
     render();
   }
+}
+
+// ---------- Sauvegarde / restauration ----------
+
+function exporterSauvegarde() {
+  const data = exportDataString();
+  const blob = new Blob([data], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const date = new Date().toISOString().slice(0, 10);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `chantiers-sauvegarde-${date}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+function importerFichier(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const result = importDataString(reader.result);
+      alert(`Import terminé : ${result.ajoutes} chantier(s) ajouté(s), ${result.remplaces} remplacé(s). Total : ${result.total}.`);
+      render();
+    } catch (e) {
+      alert("Fichier invalide, import annulé.");
+    }
+  };
+  reader.readAsText(file);
+  document.getElementById("importFile").value = "";
 }
 
 function ouvrirModalNouveauChantier() {

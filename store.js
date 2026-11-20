@@ -59,3 +59,34 @@ function deleteMetre(chantierId, metreId) {
   chantier.metres = chantier.metres.filter((m) => m.id !== metreId);
   saveChantiers(list);
 }
+
+// ---------- Sauvegarde / restauration ----------
+
+function exportDataString() {
+  return JSON.stringify(
+    { app: "chantiers_v1", exportedAt: new Date().toISOString(), chantiers: getChantiers() },
+    null,
+    2
+  );
+}
+
+// Fusionne par id : un chantier importé avec id déjà présent remplace l'existant,
+// sinon il est ajouté. Rien n'est supprimé de ce qui existe déjà.
+function importDataString(jsonStr) {
+  const parsed = JSON.parse(jsonStr);
+  const incoming = Array.isArray(parsed) ? parsed : parsed.chantiers;
+  if (!Array.isArray(incoming)) throw new Error("Format de fichier invalide");
+
+  const current = getChantiers();
+  const byId = new Map(current.map((c) => [c.id, c]));
+  let ajoutes = 0;
+  let remplaces = 0;
+  incoming.forEach((c) => {
+    if (!c || !c.id) return;
+    if (byId.has(c.id)) remplaces++;
+    else ajoutes++;
+    byId.set(c.id, c);
+  });
+  saveChantiers(Array.from(byId.values()));
+  return { ajoutes, remplaces, total: byId.size };
+}
